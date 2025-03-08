@@ -1,0 +1,49 @@
+{
+    "name": "vaskiq/eloquent-light-repo",
+    "description": "A lightweight repository pattern implementation for Laravel Eloquent models",
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Vasilii Shvakin",
+            "email": "vasiliy.shvakin@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/container": "^11.44|^12.0",
+        "illuminate/database": "^11.44|^12.0",
+        "illuminate/support": "^11.44|^12.0",
+        "illuminate/translation": "^11.44|^12.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.21",
+        "pestphp/pest": "^2.34",
+        "orchestra/testbench": "^9.0",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest-plugin-laravel": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vaskiq\\EloquentLightRepo\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Vaskiq\\EloquentLightRepo\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "format": "pint",
+        "test": "pest"
+    }
+}
