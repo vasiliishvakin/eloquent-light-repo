@@ -65,13 +65,6 @@ interface EloquentRepositoryInterface
     public function findFirstOrFail(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Model;
 
     /**
-     * Returns a collection of all Eloquent models.
-     *
-     * @return Collection<int|string, TModel>
-     */
-    public function all(): Collection;
-
-    /**
      * Creates and persists a new Eloquent model.
      *
      * @param  array<string, mixed>  $data

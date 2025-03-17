@@ -22,11 +22,6 @@ beforeEach(function () {
         {
             parent::__construct($model);
         }
-
-        public function all(): \Illuminate\Support\Collection
-        {
-            return collect([]);
-        }
     };
 });
 
