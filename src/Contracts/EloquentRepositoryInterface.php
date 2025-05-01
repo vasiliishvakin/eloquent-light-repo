@@ -6,6 +6,9 @@ namespace Vaskiq\EloquentLightRepo\Contracts;
 
 use Closure;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Contracts\Pagination\CursorPaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -21,18 +24,20 @@ interface EloquentRepositoryInterface
      *
      * @param  int|string  $id  The ID of the model to find
      * @param  array  $columns  The columns to select
+     * @param  Closure|null  $queryCallback  Optional callback to modify the query
      * @return TModel|null
      */
-    public function find(int|string $id, array $columns = ['*']): ?Model;
+    public function find(int|string $id, ?Closure $queryModifier = null, array $columns = ['*']): ?Model;
 
     /**
      * Finds an Eloquent model by its ID or throws an exception.
      *
      * @param  int|string  $id  The ID of the model to find
      * @param  array  $columns  The columns to select
+     * @param  Closure|null  $queryCallback  Optional callback to modify the query
      * @return TModel
      */
-    public function findOrFail(int|string $id, array $columns = ['*']): Model;
+    public function findOrFail(int|string $id, ?Closure $queryModifier = null, array $columns = ['*']): Model;
 
     /**
      * Finds Eloquent models based on a set of conditions.
@@ -178,9 +183,64 @@ interface EloquentRepositoryInterface
     public function updateOrCreate(array $attributes, array $values): Model;
 
     /**
-     * Collect executed queries for debugging purposes.
-     *
-     * @param  array|null  $collected  Reference to an array that will store the collected queries
+     * Get the table name of the model.
      */
-    public function withQueryCollection(?array &$collected = null): self;
+    public function getTable(): string;
+
+    /**
+     * Execute a callback within a database transaction.
+     */
+    public function transaction(Closure $callback): mixed;
+
+    /**
+     * Paginate the results using LengthAwarePaginator.
+     */
+    public function paginate(
+        array|Closure|Expression|null $conditions = null,
+        ?Closure $queryModifier = null,
+        array $params = []
+    ): LengthAwarePaginator;
+
+    /**
+     * Paginate the results using SimplePaginator.
+     */
+    public function simplePaginate(
+        array|Closure|Expression|null $conditions = null,
+        ?Closure $queryModifier = null,
+        array $params = []
+    ): Paginator;
+
+    /**
+     * Paginate the results using CursorPaginator.
+     */
+    public function cursorPaginate(
+        array|Closure|Expression|null $conditions = null,
+        ?Closure $queryModifier = null,
+        array $params = []
+    ): CursorPaginator;
+
+    /**
+     * Run a query with a custom executor.
+     */
+    public function runQuery(
+        array|Closure|Expression|null $conditions = null,
+        ?Closure $queryModifier = null,
+        QueryExecutorInterface|Closure $executor = QueryExecutor::Get,
+        array $params = []
+    ): mixed;
+
+    /**
+     * Run a custom query using a closure.
+     */
+    public function runCustomQuery(Closure $closure): mixed;
+
+    /**
+     * Refresh only the given or loaded relations of the model.
+     */
+    public function refreshRelations(Model $model, ?array $relations = null): Model;
+
+    /**
+     * Refresh the model instance and optionally its relations.
+     */
+    public function refresh(Model $model, array|false|null $relations = null): Model;
 }

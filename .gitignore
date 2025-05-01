@@ -6,6 +6,7 @@
 /.php-cs-fixer.cache
 /phpunit.xml
 /coverage
+/coverage-html
 /build
 /.phpunit.cache
 /node_modules
