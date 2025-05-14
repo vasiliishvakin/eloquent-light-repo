@@ -14,9 +14,11 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Stringable;
 use Vaskiq\EloquentLightRepo\Contracts\EloquentRepositoryInterface;
 use Vaskiq\EloquentLightRepo\Contracts\QueryCollectorInterface;
 use Vaskiq\EloquentLightRepo\Contracts\QueryExecutorInterface;
+use Vaskiq\EloquentLightRepo\Query\QueryCriteria;
 use Vaskiq\EloquentLightRepo\Query\QueryExecutor;
 use Vaskiq\EloquentLightRepo\Support\QueryCollector;
 
@@ -105,7 +107,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      * @return Collection<int, TModel>
      */
-    public function findBy(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Collection
+    public function findBy(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Collection
     {
         return $this->runQuery(
             $conditions,
@@ -121,7 +123,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      * @return TModel|null
      */
-    public function findFirst(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): ?Model
+    public function findFirst(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): ?Model
     {
         return $this->runQuery(
             $conditions,
@@ -139,7 +141,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      */
-    public function findFirstOrFail(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Model
+    public function findFirstOrFail(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Model
     {
         return $this->runQuery(
             $conditions,
@@ -156,7 +158,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  array  $params  Additional parameters passed to paginate (e.g., ['perPage' => 15, 'page' => 1])
      */
     public function paginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): LengthAwarePaginator {
@@ -170,7 +172,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  array  $params  Additional parameters passed to simplePaginate
      */
     public function simplePaginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): Paginator {
@@ -184,7 +186,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  array  $params  Additional parameters passed to cursorPaginate (e.g., ['perPage' => 10])
      */
     public function cursorPaginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): CursorPaginator {
@@ -248,7 +250,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      * @return int Number of records deleted
      */
-    public function deleteBy(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null): int
+    public function deleteBy(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null): int
     {
         return $this->buildQuery($conditions, $queryModifier)->delete();
     }
@@ -274,7 +276,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      *
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      */
-    public function exists(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): bool
+    public function exists(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): bool
     {
         $query = $forceRaw
             ? tap($this->raw(), fn ($q) => $conditions ? $q->where($conditions) : null)
@@ -288,7 +290,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      *
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      */
-    public function count(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): int
+    public function count(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): int
     {
         $query = $forceRaw
             ? tap($this->raw(), fn ($q) => $conditions ? $q->where($conditions) : null)
@@ -358,12 +360,24 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
      *
      * @param  (Closure(EloquentBuilder):void)|null  $queryModifier
      */
-    public function buildQuery(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null): EloquentBuilder
+    public function buildQuery(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null): EloquentBuilder
     {
         $query = $this->query();
-        if ($conditions) {
-            $query->where($conditions);
-        }
+
+        match (true) {
+            $conditions instanceof QueryCriteria,
+            $conditions instanceof Closure => $conditions($query),
+
+            is_array($conditions),
+            $conditions instanceof Expression => $query->where($conditions),
+
+            is_int($conditions),
+            is_string($conditions),
+            $conditions instanceof Stringable => $query->whereKey((string) $conditions),
+
+            default => null,
+        };
+
         if ($queryModifier) {
             $queryModifier($query);
         }
@@ -372,7 +386,7 @@ abstract class EloquentRepository implements EloquentRepositoryInterface, QueryC
     }
 
     public function runQuery(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         QueryExecutorInterface|Closure $executor = QueryExecutor::Get,
         array $params = []

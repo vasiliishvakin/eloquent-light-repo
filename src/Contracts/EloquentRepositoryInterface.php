@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
+use Stringable;
+use Vaskiq\EloquentLightRepo\Query\QueryCriteria;
 
 /**
  * @template TModel of Model
@@ -42,32 +44,32 @@ interface EloquentRepositoryInterface
     /**
      * Finds Eloquent models based on a set of conditions.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @param  array  $columns  The columns to select
      * @return Collection<int|string, TModel>
      */
-    public function findBy(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Collection;
+    public function findBy(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Collection;
 
     /**
      * Finds the first Eloquent model based on a set of conditions.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @param  array  $columns  The columns to select
      * @return TModel|null
      */
-    public function findFirst(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): ?Model;
+    public function findFirst(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): ?Model;
 
     /**
      * Finds the first Eloquent model based on a set of conditions or throws an exception.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @param  array  $columns  The columns to select
      * @return TModel
      */
-    public function findFirstOrFail(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Model;
+    public function findFirstOrFail(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, array $columns = ['*']): Model;
 
     /**
      * Creates and persists a new Eloquent model.
@@ -104,11 +106,11 @@ interface EloquentRepositoryInterface
     /**
      * Deletes models that match the given conditions.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @return int The number of records deleted
      */
-    public function deleteBy(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null): int;
+    public function deleteBy(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null): int;
 
     /**
      * Process models in chunks.
@@ -122,20 +124,20 @@ interface EloquentRepositoryInterface
     /**
      * Check if models exist based on the given conditions.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @param  bool  $forceRaw  Whether to use the raw query builder
      */
-    public function exists(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): bool;
+    public function exists(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): bool;
 
     /**
      * Count models based on the given conditions.
      *
-     * @param  array|Closure|Expression|null  $conditions  Optional conditions to filter by
+     * @param  array|QueryCriteria|Closure|Expression|string|int|Stringable|null  $conditions  Optional conditions to filter by
      * @param  Closure|null  $queryModifier  Optional callback to modify the query
      * @param  bool  $forceRaw  Whether to use the raw query builder
      */
-    public function count(array|Closure|Expression|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): int;
+    public function count(array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null, ?Closure $queryModifier = null, bool $forceRaw = false): int;
 
     /**
      * Get a collection of a single column's values.
@@ -196,7 +198,7 @@ interface EloquentRepositoryInterface
      * Paginate the results using LengthAwarePaginator.
      */
     public function paginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): LengthAwarePaginator;
@@ -205,7 +207,7 @@ interface EloquentRepositoryInterface
      * Paginate the results using SimplePaginator.
      */
     public function simplePaginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): Paginator;
@@ -214,7 +216,7 @@ interface EloquentRepositoryInterface
      * Paginate the results using CursorPaginator.
      */
     public function cursorPaginate(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         array $params = []
     ): CursorPaginator;
@@ -223,7 +225,7 @@ interface EloquentRepositoryInterface
      * Run a query with a custom executor.
      */
     public function runQuery(
-        array|Closure|Expression|null $conditions = null,
+        array|QueryCriteria|Closure|Expression|string|int|Stringable|null $conditions = null,
         ?Closure $queryModifier = null,
         QueryExecutorInterface|Closure $executor = QueryExecutor::Get,
         array $params = []

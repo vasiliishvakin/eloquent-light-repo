@@ -1,25 +1,24 @@
 # Eloquent Light Repository
 
-A lightweight base repository for Laravel Eloquent models.
-Supports flexible query logic, optional transactions, and clean code structure.
+Minimalistic base repository for Laravel Eloquent. Focuses on clean, flexible query structure and optional transactional logic.
 
-## ✨ Features
+## Features
 
-- Simple and consistent Eloquent repository
-- Supports closures and expressions for flexible conditions
-- Built-in support for pagination (standard, simple, cursor)
-- Optional transactions for updates and deletes
-- `runQuery()` for custom query execution
+- Unified interface for model queries
+- Query conditions via arrays, closures, expressions, or `QueryCriteria`
+- Built-in pagination (standard, simple, cursor)
+- Optional transactions for write operations
+- `runQuery()` for custom executions
 
-## 📦 Installation
+## Installation
 
 ```bash
 composer require vaskiq/eloquent-light-repo
 ```
 
-## 🚀 Usage
+## Usage
 
-Create your repository:
+Extend the base repository:
 
 ```php
 use Vaskiq\EloquentLightRepo\EloquentRepository;
@@ -34,39 +33,52 @@ class UserRepository extends EloquentRepository
 }
 ```
 
-Basic methods:
+Query examples:
 
 ```php
 $repo->find(1);
 $repo->findBy(['active' => true]);
-$repo->update(1, ['name' => 'New Name']);
+$repo->update(1, ['name' => 'New']);
 $repo->delete(1);
+$repo->paginate(null, fn ($q) => $q->orderBy('id', 'desc'));
 ```
 
-Advanced examples:
+## QueryCriteria
+
+`QueryCriteria` allows expressive query conditions and modifications:
 
 ```php
-// With custom query modifier
-$repo->findFirst(fn ($q) => $q->where('email', 'like', '%@example.com'));
+use Vaskiq\EloquentLightRepo\Query\QueryCriteria;
+use Vaskiq\EloquentLightRepo\Query\Conditions\Value;
 
-// Paginate with ordering
-$repo->paginate(null, fn ($q) => $q->orderBy('created_at', 'desc'));
+$criteria = new QueryCriteria([
+    'status' => Value::in(['active', 'pending']),
+    'deleted_at' => null,
+]);
+
+$repo->findBy($criteria);
 ```
 
-## 📘 API Highlights
+Also supports:
+- primary key lookup: `new QueryCriteria(1)` or `new QueryCriteria([1, 2, 3])`
+- nested conditions
+- custom query modifier via closure: `new QueryCriteria([...], fn ($q) => ...)`
+
+## API Overview
 
 - `find($id)`
-- `findBy(array|Closure|Expression)`
+- `findBy(array|Closure|QueryCriteria|Expression)`
+- `findFirst(...)`, `findFirstOrFail(...)`
 - `update($id, array $data)`
 - `delete($id)`
-- `paginate()`, `simplePaginate()`, `cursorPaginate()`
-- `runQuery()` — for custom execution
-- `refresh($model)` and `refreshRelations($model)`
+- `paginate(...)`, `simplePaginate(...)`, `cursorPaginate(...)`
+- `exists(...)`, `count(...)`, `pluck(...)`
+- `runQuery(...)`, `runCustomQuery(...)`
+- `refresh($model)`, `refreshRelations($model)`
 
+For full signatures, see the `EloquentRepository` class.
 
-> **📎 Tip:** For a full list of available methods and signatures, explore the `EloquentRepository` class directly in the source code.
+## License
 
-## 📄 License
-
-Apache License 2.0
-See [LICENSE](LICENSE) for details.
+Apache 2.0
+See [LICENSE](LICENSE).
